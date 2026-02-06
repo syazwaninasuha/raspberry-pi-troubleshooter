@@ -47,7 +47,7 @@
                     footer: "Built for MakerLab in Schools by Penang Science Cluster • Inspiring Innovation",
                     aiLabel: "Optional / Pilihan",
                     aiSubLabel: "Optional: Tell us what's happening",
-                    aiPlaceholder: "e.g., 'The light is red' or 'The screen is stuck'...",
+                    aiPlaceholder: "e.g., 'The light is yellow' or 'The screen is black'...",
                     aiButton: "Analyze Issue",
                     aiInfo: "AI will jump to the best step",
                     aiError: "System couldn't identify the step. Please use the manual guide below.",
@@ -79,19 +79,7 @@
                             image: "https://www.raspberrypi.com/documentation/computers/images/Pi5-annotated-top.png",
                             options: [
                                 { label: "Yellow (Blinking/Steady)", next: 'use_check', color: 'bg-yellow-600' },
-                                { label: "Red (Solid)", next: 'press_button', color: 'bg-red-600' },
-                                { label: "No light at all", next: 'swap_psu', color: 'bg-slate-600' }
-                            ]
-                        },
-                        press_button: {
-                            title: "Press the Power Button",
-                            description: "A red light means the Pi is in 'standby' mode or has an internal error.",
-                            icon: 'fingerprint',
-                            instruction: "Firmly press the power button on the side of the Raspberry Pi hardware once.",
-                            image: "https://www.raspberrypi.com/documentation/computers/images/Pi5-annotated-side.png",
-                            options: [
-                                { label: "It turned Yellow!", next: 'use_check', color: 'bg-[#206a5d]' },
-                                { label: "Still Red / No change", next: 'pi_faulty_result', color: 'bg-red-700' }
+                                { label: "No light at all.", next: 'swap_psu', color: 'bg-slate-600' }
                             ]
                         },
                         swap_psu: {
@@ -100,15 +88,15 @@
                             icon: 'refresh-cw',
                             instruction: "Try swapping the Raspberry Pi power supply/cable with another one that you know works.",
                             options: [
-                                { label: "I see a light now!", next: 'led_check', color: 'bg-[#206a5d]' },
-                                { label: "Still no light at all", next: 'pi_faulty_result', color: 'bg-red-600' }
+                                { label: "I see a light now!", next: 'use_check_swapped', color: 'bg-[#206a5d]' },
+                                { label: "Still no light at all.", next: 'pi_faulty_result', color: 'bg-red-600' }
                             ]
                         },
                         pi_faulty_result: {
                             type: 'result',
                             status: 'error',
                             title: "Diagnosis: Hardware Failure",
-                            description: "We've confirmed power is reaching the unit (Red light) or tested with a known working cable, but the board refuses to boot.",
+                            description: "Despite troubleshooting the power source and connections, the Raspberry Pi board refuses to start up correctly.",
                             recommendation: "The Raspberry Pi hardware board itself is faulty. Please label this unit as 'Faulty' and contact your PSC program lead for a replacement.",
                             icon: 'alert-circle'
                         },
@@ -122,6 +110,16 @@
                                 { label: "No, I still can't use it.", next: 'monitor_check', color: 'bg-slate-700' }
                             ]
                         },
+                        use_check_swapped: {
+                            title: "Usability Check",
+                            description: "The hardware is responding to the new power source.",
+                            icon: 'cpu',
+                            instruction: "Are you able to use the computer now (see the desktop, move the mouse)?",
+                            options: [
+                                { label: "Yes, it works now!", next: 'os_confirmation_swapped', color: 'bg-[#206a5d]' },
+                                { label: "No, I'm still not seeing anything.", next: 'monitor_check', color: 'bg-slate-700' }
+                            ]
+                        },
                         os_confirmation: {
                             title: "System Verification",
                             description: "You've confirmed the hardware and input are responding.",
@@ -129,7 +127,37 @@
                             instruction: "Can you see the full Raspberry Pi OS desktop (the menu, wallpaper, and icons)?",
                             options: [
                                 { label: "Yes, everything is working!", next: 'it_works', color: 'bg-[#206a5d]' },
-                                { label: "No, I'm not seeing the desktop", next: 'sd_reformat', color: 'bg-orange-600' }
+                                { label: "No, I'm not seeing the full OS.", next: 'sd_reformat', color: 'bg-orange-600' }
+                            ]
+                        },
+                        os_confirmation_swapped: {
+                            title: "Final Verification",
+                            description: "The hardware is responding to the new power source.",
+                            icon: 'layout',
+                            instruction: "Is the Raspberry Pi OS desktop fully visible and working?",
+                            options: [
+                                { label: "Yes, it's perfect!", next: 'faulty_cable_result', color: 'bg-[#206a5d]' },
+                                { label: "No, I'm not seeing the full OS.", next: 'sd_reformat', color: 'bg-orange-600' }
+                            ]
+                        },
+                        os_confirmation_hdmi: {
+                            title: "Visual Verification",
+                            description: "Checking if the monitor connection is now stable.",
+                            icon: 'layout',
+                            instruction: "Is the Raspberry Pi OS desktop fully visible and working on the screen now?",
+                            options: [
+                                { label: "Yes, I see the OS desktop!", next: 'faulty_hdmi_result', color: 'bg-[#206a5d]' },
+                                { label: "No, I'm not seeing the full OS.", next: 'sd_reformat', color: 'bg-orange-600' }
+                            ]
+                        },
+                        os_confirmation_monitor: {
+                            title: "Visual Verification",
+                            description: "The Raspberry Pi is displaying on the new monitor.",
+                            icon: 'layout',
+                            instruction: "Is the Raspberry Pi OS desktop fully visible and working on the new screen?",
+                            options: [
+                                { label: "Yes, it works!", next: 'faulty_monitor_result', color: 'bg-[#206a5d]' },
+                                { label: "No, software issue.", next: 'sd_reformat', color: 'bg-orange-600' }
                             ]
                         },
                         monitor_check: {
@@ -146,11 +174,16 @@
                             title: "Monitor Rescue: HDMI Check",
                             description: "Let's check the connection between the Pi and the screen.",
                             icon: 'settings',
-                            instruction: "1. Make sure the monitor is switched on. 2. Unplug and replug the HDMI cable firmly. 3. Try a different HDMI cable.",
+                            instruction: "Follow these steps to check the monitor hardware connection:",
+                            detailedSteps: [
+                                { text: "Make sure the monitor is switched on." },
+                                { text: "Unplug and replug the HDMI cable firmly." },
+                                { text: "Try a different HDMI cable if available." }
+                            ],
                             image: "https://images.unsplash.com/photo-1629739682536-3990664972f7?auto=format&fit=crop&q=80&w=1000",
                             options: [
-                                { label: "It works now!", next: 'os_confirmation', color: 'bg-[#206a5d]' },
-                                { label: "Still a black screen", next: 'monitor_swap_check', color: 'bg-slate-700' }
+                                { label: "It works now!", next: 'os_confirmation_hdmi', color: 'bg-[#206a5d]' },
+                                { label: "Still a black screen.", next: 'monitor_swap_check', color: 'bg-slate-700' }
                             ]
                         },
                         monitor_swap_check: {
@@ -159,9 +192,9 @@
                             icon: 'monitor',
                             instruction: "Connect the Raspberry Pi hardware to a completely different monitor that you know is working.",
                             options: [
-                                { label: "It works on the new screen!", next: 'os_confirmation', color: 'bg-[#206a5d]' },
-                                { label: "Still nothing on any screen", next: 'monitor_fail_result', color: 'bg-orange-600' },
-                                { label: "Screen is on, but Pi won't boot", next: 'sd_reformat', color: 'bg-blue-700' }
+                                { label: "It works on the new screen!", next: 'os_confirmation_monitor', color: 'bg-[#206a5d]' },
+                                { label: "Still nothing on any screen.", next: 'monitor_fail_result', color: 'bg-orange-600' },
+                                { label: "Screen is on, but Pi won't boot.", next: 'sd_reformat', color: 'bg-blue-700' }
                             ]
                         },
                         monitor_fail_result: {
@@ -181,12 +214,12 @@
                                 { text: "Open 'Raspberry Pi Imager'. If you don't have it, install it from:", link: "https://www.raspberrypi.com/software/" },
                                 { text: "Select Device: Raspberry Pi 5", bold: true },
                                 { text: "Select OS: Raspberry Pi OS (64-bit)", bold: true },
-                                { text: "Customization such as hostname, localization, and account registration are optional.", bold: true }
+                                { text: "Customization such as hostname, localization, and account registration are optional." }
                             ],
                             image: "https://www.raspberrypi.com/documentation/computers/images/imager-v1.8.png",
                             options: [
                                 { label: "Reformat complete! Desktop is visible.", next: 'sd_corrupted_result', color: 'bg-[#206a5d]' },
-                                { label: "I reformatted, but it still won't boot", next: 'sd_swap', color: 'bg-slate-700' }
+                                { label: "I reformatted, but it still won't boot.", next: 'sd_swap', color: 'bg-slate-700' }
                             ]
                         },
                         sd_corrupted_result: {
@@ -204,7 +237,7 @@
                             instruction: "Swap to a different microSD card that you know is working (borrow one from a successful setup).",
                             options: [
                                 { label: "That fixed it! Desktop is visible.", next: 'sd_faulty_result', color: 'bg-[#206a5d]' },
-                                { label: "Even a new card fails", next: 'sd_pi_fail_result', color: 'bg-red-600' }
+                                { label: "Even a new card fails.", next: 'sd_pi_fail_result', color: 'bg-red-600' }
                             ]
                         },
                         sd_faulty_result: {
@@ -220,8 +253,32 @@
                             status: 'error',
                             title: "Diagnosis: Hardware or Slot Failure",
                             description: "We've checked the monitor, the cables, and multiple microSD cards.",
-                            recommendation: "Since even a good microSD card failed, the Raspberry Pi hardware itself likely has a fault and needs to be replaced.",
+                            recommendation: "Since even a good microSD card failed, the Raspberry Pi hardware itself likely has a fault and needs to be replaced. Please contact PSC staff for next steps.",
                             icon: 'alert-circle'
+                        },
+                        faulty_cable_result: {
+                            type: 'result',
+                            status: 'success',
+                            title: "Success: Faulty Power Cable",
+                            description: "Your Raspberry Pi is working now, but only because we swapped the power cable.",
+                            recommendation: "Please label and discard your original power cable/supply as it is faulty and unsafe to use. Please replace it with a working cable instead.",
+                            icon: 'zap'
+                        },
+                        faulty_hdmi_result: {
+                            type: 'result',
+                            status: 'success',
+                            title: "Success: Faulty HDMI Connection",
+                            description: "The display is working now, indicating that the previous HDMI cable or connection was the issue.",
+                            recommendation: "If you had to swap the HDMI cable to get an image, please discard the original faulty cable. If you only had to re-seat it, ensure the connections are always firm.",
+                            icon: 'monitor'
+                        },
+                        faulty_monitor_result: {
+                            type: 'result',
+                            status: 'success',
+                            title: "Success: Faulty Monitor Identified",
+                            description: "The system is working now with a different monitor, confirming the original screen hardware is faulty.",
+                            recommendation: "Please label the original monitor as 'Faulty' and contact your PSC lead for a replacement. Use the working monitor for now.",
+                            icon: 'monitor'
                         },
                         it_works: {
                             type: 'result',
@@ -240,8 +297,9 @@
                     mission: "Arahan:",
                     recommendation: "Diagnosis & Langkah Seterusnya:",
                     footer: "Dibina untuk program MakerLab di Sekolah oleh Penang Science Cluster",
-                    aiLabel: "Pilihan: Ceritakan apa yang berlaku",
-                    aiPlaceholder: "contoh: 'Lampu merah menyala' atau 'Skrin hitam'...",
+                    aiLabel: "Optional / Pilihan",
+                    aiSubLabel: "Pilihan: Ceritakan apa yang berlaku",
+                    aiPlaceholder: "contoh: 'Lampu kuning berkelip' atau 'Skrin hitam'...",
                     aiButton: "Analisis Masalah",
                     aiError: "Maaf, saya tidak dapat memproses masalah tersebut. Mari bermula dari awal.",
                     steps: {
@@ -272,19 +330,7 @@
                             image: "https://www.raspberrypi.com/documentation/computers/images/Pi5-annotated-top.png",
                             options: [
                                 { label: "Kuning (Berkelip/Tetap)", next: 'use_check', color: 'bg-yellow-600' },
-                                { label: "Merah (Tetap)", next: 'press_button', color: 'bg-red-600' },
-                                { label: "Tiada lampu langsung", next: 'swap_psu', color: 'bg-slate-600' }
-                            ]
-                        },
-                        press_button: {
-                            title: "Tekan Butang Kuasa",
-                            description: "Lampu merah bermaksud Raspberry Pi berada dalam mod 'standby' atau mempunyai ralat dalaman.",
-                            icon: 'fingerprint',
-                            instruction: "Tekan butang kuasa di sisi perkakasan Raspberry Pi dengan kuat sekali.",
-                            image: "https://www.raspberrypi.com/documentation/computers/images/Pi5-annotated-side.png",
-                            options: [
-                                { label: "Ia bertukar Kuning!", next: 'use_check', color: 'bg-[#206a5d]' },
-                                { label: "Masih Merah / Tiada perubahan", next: 'pi_faulty_result', color: 'bg-red-700' }
+                                { label: "Tiada lampu langsung.", next: 'swap_psu', color: 'bg-slate-600' }
                             ]
                         },
                         swap_psu: {
@@ -293,16 +339,16 @@
                             icon: 'refresh-cw',
                             instruction: "Cuba tukar bekalan kuasa/kabel Raspberry Pi dengan yang lain.",
                             options: [
-                                { label: "Saya nampak lampu sekarang!", next: 'led_check', color: 'bg-[#206a5d]' },
-                                { label: "Masih tiada lampu langsung", next: 'pi_faulty_result', color: 'bg-red-600' }
+                                { label: "Saya nampak lampu sekarang!", next: 'use_check_swapped', color: 'bg-[#206a5d]' },
+                                { label: "Masih tiada lampu langsung.", next: 'pi_faulty_result', color: 'bg-red-600' }
                             ]
                         },
                         pi_faulty_result: {
                             type: 'result',
                             status: 'error',
                             title: "Diagnosis: Kerosakan Perkakasan",
-                            description: "Kami telah mengesahkan kuasa sampai ke unit (Lampu Merah) atau telah mencuba kabel lain, tetapi papan tetap tidak dapat 'boot'.",
-                            recommendation: "Papan Raspberry Pi itu sendiri telah rosak. Sila labelkan unit ini sebagai 'Rosak' (Faulty) dan hubungi ketua program PSC untuk penggantian.",
+                            description: "Walaupun bekalan kuasa dan sambungan telah diperiksa, papan Raspberry Pi tetap tidak dapat dihidupkan dengan betul.",
+                            recommendation: "Papan Raspberry Pi itu sendiri telah rosak. Sila labelkan unit ini sebagai 'Rosak' (Faulty) dan hubungi staf PSC untuk penggantian.",
                             icon: 'alert-circle'
                         },
                         use_check: {
@@ -315,6 +361,16 @@
                                 { label: "Tidak, saya masih tidak boleh menggunakannya.", next: 'monitor_check', color: 'bg-slate-700' }
                             ]
                         },
+                        use_check_swapped: {
+                            title: "Pemeriksaan Kebolehgunaan",
+                            description: "Perkakasan memberi respon kepada punca kuasa yang baru.",
+                            icon: 'cpu',
+                            instruction: "Adakah anda dapat menggunakan komputer sekarang?",
+                            options: [
+                                { label: "Ya, ia sudah berfungsi!", next: 'os_confirmation_swapped', color: 'bg-[#206a5d]' },
+                                { label: "Tidak, masih tiada imej.", next: 'monitor_check', color: 'bg-slate-700' }
+                            ]
+                        },
                         os_confirmation: {
                             title: "Pengesahan Sistem",
                             description: "Sahkan bahawa sistem operasi telah dimuatkan sepenuhnya.",
@@ -322,27 +378,62 @@
                             instruction: "Adakah anda dapat melihat desktop Raspberry Pi OS sepenuhnya (menu, kertas dinding, dan ikon)?",
                             options: [
                                 { label: "Ya, semuanya berfungsi!", next: 'it_works', color: 'bg-[#206a5d]' },
-                                { label: "Tidak, saya tidak nampak desktop", next: 'sd_reformat', color: 'bg-orange-600' }
+                                { label: "Tidak, saya tidak nampak OS desktop.", next: 'sd_reformat', color: 'bg-orange-600' }
+                            ]
+                        },
+                        os_confirmation_swapped: {
+                            title: "Pengesahan Terakhir",
+                            description: "Perkakasan memberi respon kepada punca kuasa yang baru.",
+                            icon: 'layout',
+                            instruction: "Adakah desktop Raspberry Pi OS kelihatan sepenuhnya?",
+                            options: [
+                                { label: "Ya, semuanya berfungsi!", next: 'faulty_cable_result', color: 'bg-[#206a5d]' },
+                                { label: "Tidak, saya tidak nampak OS desktop.", next: 'sd_reformat', color: 'bg-orange-600' }
+                            ]
+                        },
+                        os_confirmation_hdmi: {
+                            title: "Pengesahan Visual",
+                            description: "Menyemak sama ada sambungan monitor kini stabil.",
+                            icon: 'layout',
+                            instruction: "Adakah desktop Raspberry Pi OS kelihatan sepenuhnya pada skrin sekarang?",
+                            options: [
+                                { label: "Ya, saya nampak OS desktop!", next: 'faulty_hdmi_result', color: 'bg-[#206a5d]' },
+                                { label: "Tidak, saya tidak nampak OS desktop.", next: 'sd_reformat', color: 'bg-orange-600' }
+                            ]
+                        },
+                        os_confirmation_monitor: {
+                            title: "Pengesahan Visual",
+                            description: "Raspberry Pi memaparkan imej pada monitor baru.",
+                            icon: 'layout',
+                            instruction: "Adakah desktop Raspberry Pi OS kelihatan sepenuhnya pada skrin baru?",
+                            options: [
+                                { label: "Ya, ia berfungsi!", next: 'faulty_monitor_result', color: 'bg-[#206a5d]' },
+                                { label: "Tidak, ralat perisian.", next: 'sd_reformat', color: 'bg-orange-600' }
                             ]
                         },
                         monitor_check: {
                             title: "Adakah Skrin Menunjukkan Apa-apa?",
-                            description: "Perkakasan hidup, tetapi monitor bermasalah.",
+                            description: "Perkakasan Raspberry Pi hidup, tetapi monitor bermasalah.",
                             icon: 'monitor',
                             instruction: "Lihat pada skrin monitor anda. Adakah anda melihat sebarang teks, warna, atau desktop?",
                             options: [
-                                { label: "Ya, saya nampak sesuatu (tapi tidak berfungsi dengan betul)", next: 'sd_reformat', color: 'bg-orange-500' },
-                                { label: "Tidak, ia hitam sepenuhnya.", next: 'monitor_hdmi_check', color: 'bg-slate-700' }
+                                { label: "Ya, saya nampak sesuatu (tapi tidak berfungsi dengan betul).", next: 'sd_reformat', color: 'bg-orange-500' },
+                                { label: "Tidak, skrin hitam sepenuhnya atau tiada signal.", next: 'monitor_hdmi_check', color: 'bg-slate-700' }
                             ]
                         },
                         monitor_hdmi_check: {
                             title: "Penyelamatan Monitor: Semak HDMI",
                             description: "Mari periksa sambungan antara Pi and skrin monitor.",
                             icon: 'settings',
-                            instruction: "1. Pastikan monitor dihidupkan. 2. Cabut dan pasang semula kabel HDMI dengan kemas. 3. Jika masih tidak berjaya, gantikan dengan kabel HDMI yang berlainan.",
+                            instruction: "Ikuti langkah ini untuk memeriksa sambungan HDMI monitor:",
+                            detailedSteps: [
+                                { text: "Pastikan monitor dihidupkan." },
+                                { text: "Cabut dan pasang semula kabel HDMI dengan kemas." },
+                                { text: "Gantikan dengan kabel HDMI yang berlainan jika masih tidak berjaya." }
+                            ],
                             image: "https://images.unsplash.com/photo-1629739682536-3990664972f7?auto=format&fit=crop&q=80&w=1000",
                             options: [
-                                { label: "Ia berfungsi sekarang!", next: 'os_confirmation', color: 'bg-[#206a5d]' },
+                                { label: "Ia berfungsi sekarang!", next: 'os_confirmation_hdmi', color: 'bg-[#206a5d]' },
                                 { label: "Masih nampak skrin hitam.", next: 'monitor_swap_check', color: 'bg-slate-700' }
                             ]
                         },
@@ -350,11 +441,11 @@
                             title: "Penyelamatan Monitor: Tukar Skrin",
                             description: "Kabel berfungsi, tetapi monitor itu sendiri mungkin bermasalah.",
                             icon: 'monitor',
-                            instruction: "Sambungkan perkakasan Raspberry Pi ke monitor lain yang anda tahu berfungsi.",
+                            instruction: "Sambungkan perkakasan Raspberry Pi ke monitor lain yang anda yakin boleh berfungsi.",
                             options: [
-                                { label: "Ia berfungsi pada skrin baru!", next: 'os_confirmation', color: 'bg-[#206a5d]' },
-                                { label: "Masih tiada apa-apa pada mana-mana skrin", next: 'monitor_fail_result', color: 'bg-orange-500' },
-                                { label: "Skrin hidup, tetapi tidak dapat melihat sistem operasi Raspberry Pi.", next: 'sd_reformat', color: 'bg-blue-700' }
+                                { label: "Ia berfungsi pada skrin baru!", next: 'os_confirmation_monitor', color: 'bg-[#206a5d]' },
+                                { label: "Masih tiada apa-apa pada mana-mana skrin.", next: 'monitor_fail_result', color: 'bg-orange-500' },
+                                { label: "Skrin hidup, tetapi tidak dapat melihat OS Raspberry Pi.", next: 'sd_reformat', color: 'bg-blue-700' }
                             ]
                         },
                         monitor_fail_result: {
@@ -374,19 +465,19 @@
                                 { text: "Buka 'Raspberry Pi Imager'.", link: "https://www.raspberrypi.com/software/" },
                                 { text: "Pilih Peranti (Device): Raspberry Pi 5", bold: true },
                                 { text: "Pilih OS: Raspberry Pi OS (64-bit)", bold: true },
-                                { text: "Tetapan lain (hostname, localisation, dll.) adalah pilihan.", bold: true }
+                                { text: "Tetapan lain (hostname, localisation, dll.) adalah pilihan." }
                             ],
                             image: "https://www.raspberrypi.com/documentation/computers/images/imager-v1.8.png",
                             options: [
-                                { label: "Selesai! Desktop nampak.", next: 'sd_corrupted_result', color: 'bg-[#206a5d]' },
-                                { label: "Dah format tapi masih tak masuk OS", next: 'sd_swap', color: 'bg-slate-700' }
+                                { label: "Selesai! OS Desktop dapat dilihat.", next: 'sd_corrupted_result', color: 'bg-[#206a5d]' },
+                                { label: "Dah format tapi masih tak masuk OS.", next: 'sd_swap', color: 'bg-slate-700' }
                             ]
                         },
                         sd_corrupted_result: {
                             type: 'result',
                             status: 'success',
-                            title: "Diagnosis: Kad microSD Korup",
-                            description: "Perkakasan Raspberry Pi anda dalam keadaan baik, tetapi data pada kad microSD telah korup.",
+                            title: "Diagnosis: Kad microSD 'Corrupt'",
+                            description: "Perkakasan Raspberry Pi anda dalam keadaan baik, tetapi data pada kad microSD telah 'corrupt'.",
                             recommendation: "Proses format semula telah membaiki isu perisian. Sentiasa gunakan 'Shut Down' dari menu Pi sebelum menutup bekalan kuasa.",
                             icon: 'file-warning'
                         },
@@ -394,9 +485,9 @@
                             title: "Pemeriksaan 'Otak': Fasa 2 (Perkakasan)",
                             description: "Jika format tidak membantu, kad fizikal mungkin rosak.",
                             icon: 'hard-drive',
-                            instruction: "Tukar ke kad microSD lain yang anda tahu berfungsi (pinjam dari setup yang berjaya).",
+                            instruction: "Tukar ke kad microSD lain yang anda yakin boleh berfungsi (pinjam dari setup yang berjaya).",
                             options: [
-                                { label: "Berjaya! Desktop nampak.", next: 'sd_faulty_result', color: 'bg-[#206a5d]' },
+                                { label: "Berjaya! OS Desktop dapat berfungsi.", next: 'sd_faulty_result', color: 'bg-[#206a5d]' },
                                 { label: "Kad baru pun gagal", next: 'sd_pi_fail_result', color: 'bg-red-600' }
                             ]
                         },
@@ -405,23 +496,47 @@
                             status: 'success',
                             title: "Diagnosis: Kerosakan Kad microSD",
                             description: "Kad microSD anda sebelum ini berkemungkinan besar mengalami kerosakan fizikal atau korupsi kekal.",
-                            recommendation: "Memandangkan kad baru berfungsi, kad lama anda perlu diganti. Sila labelkan kad lama sebagai 'Rosak' dan gunakan kad baru.",
+                            recommendation: "Memandangkan kad baru berfungsi, kad lama anda perlu diganti. Sila labelkan kad lama sebagai 'Rosak' dan gantikan dengan kad baru.",
                             icon: 'hard-drive'
                         },
                         sd_pi_fail_result: {
                             type: 'result',
                             status: 'error',
                             title: "Diagnosis: Kegagalan Perkakasan",
-                            description: "Kami telah memeriksa monitor, kabel, dan berbilang kad microSD.",
+                            description: "Kita telah memeriksa monitor, kabel, dan berbilang kad microSD.",
                             recommendation: "Memandangkan kad microSD yang baru juga gagal, perkakasan Raspberry Pi itu sendiri mungkin mempunyai kerosakan dan perlu diganti.",
                             icon: 'alert-circle'
+                        },
+                        faulty_cable_result: {
+                            type: 'result',
+                            status: 'success',
+                            title: "Berjaya: Kabel Kuasa Rosak",
+                            description: "Raspberry Pi anda berfungsi sekarang, tetapi hanya kerana kita telah menukar kabel kuasa.",
+                            recommendation: "Sila label dan buangkan kabel/bekalan kuasa asal anda kerana ia telah rosak dan tidak selamat digunakan. Gantikan dengan kabel yang berfungsi.",
+                            icon: 'zap'
+                        },
+                        faulty_hdmi_result: {
+                            type: 'result',
+                            status: 'success',
+                            title: "Berjaya: Kerosakan Sambungan HDMI",
+                            description: "Paparan kini berfungsi, menunjukkan bahawa kabel atau sambungan HDMI sebelum ini adalah punca masalah.",
+                            recommendation: "Jika anda terpaksa menukar kabel HDMI, sila buang kabel yang rosak tersebut. Jika anda hanya perlu memasangnya semula, pastikan sambungan sentiasa kemas.",
+                            icon: 'monitor'
+                        },
+                        faulty_monitor_result: {
+                            type: 'result',
+                            status: 'success',
+                            title: "Berjaya: Monitor Rosak Dikenalpasti",
+                            description: "Sistem berfungsi dengan monitor lain, mengesahkan monitor asal telah rosak.",
+                            recommendation: "Sila labelkan monitor asal sebagai 'Rosak' dan hubungi ketua program PSC untuk penggantian. Gunakan monitor yang berfungsi buat masa ini.",
+                            icon: 'monitor'
                         },
                         it_works: {
                             type: 'result',
                             status: 'success',
                             title: "Sistem Berfungsi Sepenuhnya",
                             description: "Perkakasan Raspberry Pi anda telah sedia. Selamat menggunakannya!",
-                            recommendation: "Ingat untuk sentiasa tutup (Shut Down) dengan betul dari menu sebelum mencabut palam.",
+                            recommendation: "Ingat untuk sentiasa tutup (Shut Down) dengan betul dari menu sebelum mematikan suis.",
                             icon: 'check-circle-2'
                         }
                     }
@@ -536,9 +651,11 @@
                                             <ul className="space-y-3 pl-10 border-l-2 border-psc/20 ml-4 py-1 mb-4">
                                                 {current.detailedSteps.map((s, i) => (
                                                     <li key={i} className="text-slate-600 text-sm flex items-start gap-2">
-                                                        <div className="w-1.5 h-1.5 bg-psc rounded-full shrink-0 mt-1.5" />
-                                                        <span className={s.bold ? "font-bold" : ""}>{s.text}</span>
-                                                        {s.link && <a href={s.link} target="_blank" className="inline-flex items-center gap-1 ml-2 text-psc font-bold hover:underline">Download <i data-lucide="external-link" className="w-3 h-3"></i></a>}
+                                                        <div className="font-bold text-psc mt-0.5 w-4 shrink-0">{i + 1}.</div>
+                                                        <div className="flex-1">
+                                                            <span className={s.bold ? "font-bold text-slate-900" : ""}>{s.text || s[lang]}</span>
+                                                            {s.link && <a href={s.link} target="_blank" className="inline-flex items-center gap-1 ml-2 text-psc font-bold hover:underline">Download <i data-lucide="external-link" className="w-3 h-3"></i></a>}
+                                                        </div>
                                                     </li>
                                                 ))}
                                             </ul>
